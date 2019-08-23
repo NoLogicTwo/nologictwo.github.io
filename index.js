@@ -6017,8 +6017,9 @@ XXXII
 Уже пришло ему невмочь.
 Вот вам письмо его точь-в-точь.
 
-Письмо Онегина к Татьяне
+DDD
 
+Письмо Онегина к Татьяне
 Предвижу все: вас оскорбит
 Печальной тайны объясненье.
 Какое горькое презренье
@@ -6027,6 +6028,8 @@ XXXII
 Открою душу вам свою?
 Какому злобному веселью,
 Быть может, повод подаю!
+
+DDD
 
 Случайно вас когда-то встретя,
 В вас искру нежности заметя,
@@ -6043,6 +6046,8 @@ XXXII
 Замена счастью. Боже мой!
 Как я ошибся, как наказан.
 
+DDD
+
 Нет, поминутно видеть вас,
 Повсюду следовать за вами,
 Улыбку уст, движенье глаз
@@ -6051,6 +6056,8 @@ XXXII
 Душой все ваше совершенство,
 Пред вами в муках замирать,
 Бледнеть и гаснуть… вот блаженство!
+
+DDD
 
 И я лишен того: для вас
 Тащусь повсюду наудачу;
@@ -6062,6 +6069,8 @@ XXXII
 Но чтоб продлилась жизнь моя,
 Я утром должен быть уверен,
 Что с вами днем увижусь я…
+
+XXXVI
 
 Боюсь: в мольбе моей смиренной
 Увидит ваш суровый взор
@@ -6079,6 +6088,8 @@ XXXII
 Вооружать и речь и взор,
 Вести спокойный разговор,
 Глядеть на вас веселым взглядом!..
+
+DDD
 
 Но так и быть: я сам себе
 Противиться не в силах боле;
@@ -6409,56 +6420,84 @@ LI
 Как я с Онегиным моим.`
 
 
-let arrayOfPoems = poetry
-	.split(/\n[A-Z]+\n/gi)
+const Game = (function GameCreator(){
+	var times = 0
+	var wins = 0
+	var answer = ""
+	let timeStart = 0
+	let timeSpend = 0
+	let commonTime = 0
 
-let poetryLength = arrayOfPoems.length
+	let arrayOfPoems = poetry
+		.split(/\n[A-Z\.]+\n/gi)
 
-let answer = ""
-let poem = ""
+	let poetryLength = arrayOfPoems.length
+	
+	function checkAnswer() {	
+		const normalize = word => word
+			.toLowerCase()
+			.replace(/\.|\,/gi, "")
+			.trim()
+		
+		times += 1
+		timeSpend = ( (Date.now() - timeStart) / 100 | 0) / 10
 
-const getRandomPoem = () => arrayOfPoems[Math.random() * poetryLength | 0]
-
-const replaceOneWord = (poem) => {
-	let array = poem.split(/\s/gi).filter(c => c != "")
-	let len = array.length
-	let randomWord = array[Math.random() * len | 0]
-	answer = randomWord
-	let inputLength = randomWord.length * 13
-	let input = `<input class='inline' type='text' style='width:${inputLength}px'>`
-	return poem.replace(randomWord, input)
-}
-
-const restructSpaces = poem => poem.split("\n").join("<br/>")
-
-const refreshPoem = (e) => {
-	let poem = getRandomPoem()
-	poem = replaceOneWord(poem)
-	poem = restructSpaces(poem)
-
-	document.getElementById('poem__wrapper').innerHTML = poem
-}
-
-const getInputValue = () => document.getElementsByClassName('inline')[0].value
-
-const checkAnswer = () => {
-	if(getInputValue == answer) {
-		winHandler()
-	} else {
-		loseHandler()
+		if(normalize(getInputValue()) == normalize(answer)) {
+			winHandler()
+		} else {
+			loseHandler()
+		}
 	}
-}
 
-winHandler = () => {
-	alert("Правильно!")
-}
+	var message = (msg) => {
+		document.getElementById("msg").innerHTML = msg
+	}
 
-loseHandler = () => {
-	alert(`Неверно! Правильный ответ - ${answer}`)
-}
+	var getRandomPoem = () => arrayOfPoems[Math.random() * poetryLength | 0]
 
+	var replaceOneWord = (poem) => {
+		let array = poem.split(/\s/gi).filter(c => c != "")
+		let len = array.length
+		let randomWord = array[Math.random() * len | 0]
+		answer = randomWord
+		let inputLength = randomWord.length * 13
+		let input = `<input class='inline' type='text' style='width:${inputLength}px'>`
+		return poem.replace(randomWord, input)
+	}
 
-document.getElementById('refresh').addEventListener('click', refreshPoem)
-document.getElementById("look_answer").addEventListener("click", checkAnswer)
+	var restructSpaces = poem => poem.split("\n").join("<br/>")
+	
+	var refreshPoem = (e) => {
+		message("Заполни пропуск")
+		timeStart = Date.now()
+		let poem = getRandomPoem()
+		poem = replaceOneWord(poem)
+		poem = restructSpaces(poem)
 
-refreshPoem()
+		document.getElementById('poem__wrapper').innerHTML = poem
+	}
+
+	var getInputValue = () => document.getElementsByClassName('inline')[0].value
+
+	var winHandler = () => {
+		message(`Правильно! Это заняло у Вас ${timeSpend}с!<br>Следующий вопрос:`)
+		wins += 1
+	}
+
+	var loseHandler = () => {
+		message(`Неверно! Правильный ответ - ${answer}`)
+	}
+
+	const look_all = () => {
+		message(`Отличная работа!
+			<br>Вего попыток:${times}
+			<br>Побед: ${wins}, ${((wins / times) * 100 | 0)}%
+			<br>Время: ${commonTime}`)
+	}
+
+	document.getElementById('refresh').addEventListener('click', refreshPoem)
+	document.getElementById("look_answer").addEventListener("click", checkAnswer)
+	document.getElementById("look_all").addEventListener("click", look_all)
+	
+	return {}
+})()
