@@ -6441,6 +6441,7 @@ const Game = (function GameCreator(){
 		
 		times += 1
 		timeSpend = ( (Date.now() - timeStart) / 100 | 0) / 10
+		commonTime += timeSpend
 
 		if(normalize(getInputValue()) == normalize(answer)) {
 			winHandler()
@@ -6492,7 +6493,7 @@ const Game = (function GameCreator(){
 		message(`Отличная работа!
 			<br>Вего попыток:${times}
 			<br>Побед: ${wins}, ${((wins / times) * 100 | 0)}%
-			<br>Время: ${commonTime}`)
+			<br>Среднее время: ${commonTime / times | 0}`)
 	}
 
 	document.getElementById('refresh').addEventListener('click', refreshPoem)
