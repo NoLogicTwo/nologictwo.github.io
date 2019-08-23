@@ -1,3 +1,11 @@
 button {
 	display: block;
 }
+
+#look_answer{
+	margin: 30px 0;	
+}
+
+.inline{
+	display: inline;
+}

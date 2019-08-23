@@ -6408,20 +6408,57 @@ LI
 И вдруг умел расстаться с ним,
 Как я с Онегиным моим.`
 
+
 let arrayOfPoems = poetry
 	.split(/\n[A-Z]+\n/gi)
-	.map(a => a.split('\n'))
 
 let poetryLength = arrayOfPoems.length
 
-const getRandomPoem = () => 
-	arrayOfPoems[Math.random() * poetryLength | 0]
-	.join('<br>')
+let answer = ""
+let poem = ""
 
-const refreshPoem = (e) => {
-	document.getElementById('poem__wrapper').innerHTML = getRandomPoem()
+const getRandomPoem = () => arrayOfPoems[Math.random() * poetryLength | 0]
+
+const replaceOneWord = (poem) => {
+	let array = poem.split(/\s/gi).filter(c => c != "")
+	let len = array.length
+	let randomWord = array[Math.random() * len | 0]
+	answer = randomWord
+	let inputLength = randomWord.length * 13
+	let input = `<input class='inline' type='text' style='width:${inputLength}px'>`
+	return poem.replace(randomWord, input)
 }
 
+const restructSpaces = poem => poem.split("\n").join("<br/>")
+
+const refreshPoem = (e) => {
+	let poem = getRandomPoem()
+	poem = replaceOneWord(poem)
+	poem = restructSpaces(poem)
+
+	document.getElementById('poem__wrapper').innerHTML = poem
+}
+
+const getInputValue = () => document.getElementsByClassName('inline')[0].value
+
+const checkAnswer = () => {
+	if(getInputValue == answer) {
+		winHandler()
+	} else {
+		loseHandler()
+	}
+}
+
+winHandler = () => {
+	alert("Правильно!")
+}
+
+loseHandler = () => {
+	alert(`Неверно! Правильный ответ - ${answer}`)
+}
+
+
 document.getElementById('refresh').addEventListener('click', refreshPoem)
+document.getElementById("look_answer").addEventListener("click", checkAnswer)
 
 refreshPoem()
