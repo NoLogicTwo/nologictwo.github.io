@@ -6673,6 +6673,13 @@ let headerUPK = `Статья 1. Законы, определяющие поря
 Статья 226.9. Особенности судебного производства по уголовному делу, дознание по которому производилось в сокращенной форме
 `
 
+let wrapper = document.getElementById('poem__wrapper')
+let next = document.getElementById('next_game')
+let refresh = document.getElementById('refresh')
+
+var message = (msg) => 
+	document.getElementById("msg").innerHTML = msg
+	
 const Work = (function WorkFabric(){
 	var array = headerUPK
 		.split('\n')
@@ -6682,11 +6689,136 @@ const Work = (function WorkFabric(){
 			let describe = c.replace(article, "").trim()
 			return [article, describe]
 		})
+	var right = 0
+	var wins = 0
+	var games = 0
 
-	return array
+	const traverseVariants = (callback) => {
+		for (let i = 1; i < 5; i++){
+			callback(i)
+		}		
+	}
+
+	const getRandomArticle = () => 
+		array[Math.random() * array.length | 0]
+
+	const ask = () => {
+		let qwest = getRandomArticle()
+		document.getElementsByClassName('qwest')[0].innerHTML = qwest[0]
+		right = Math.random() * 4 | 0 + 1
+		
+		const cleanField = (i) => {
+			color("red", i, true)
+			color("yellow", i, true)
+			color("green", i, true)
+		}
+
+		traverseVariants(cleanField)
+
+
+		for (let i = 1; i < 5; i++){
+			if(i == right){
+				fillVariant(qwest[1], i)
+			} else {
+				fillVariant(getRandomArticle()[1], i)
+			}
+		}
+	}
+
+	const showRight = () => {
+		if (color("yellow", right, true)){
+			wins += 1
+		}
+		color("green", right)
+		
+		const callback = (i) => {
+			if (i == right) {
+				return
+			}
+			if(color("yellow", i, true)){
+				color("red", i)
+			}
+		}
+
+		games += 1
+
+		traverseVariants(callback)
+		message(`счет: ${wins} : ${games - wins}<br />процент успеха ${wins / games * 100 | 0}`)
+	}
+
+	const createUPK = () => {
+		Game.destruct()
+
+		let wrap = "<div id='UPK__wrapper'>"
+		wrap += '<div class="qwest"></div>'
+		wrap += '<div class="variant1 v"></div>'
+		wrap += '<div class="variant2 v"></div>'
+		wrap += '<div class="variant3 v"></div>'
+		wrap += '<div class="variant4 v"></div>'
+		wrap += '</div>'
+
+		document.getElementsByTagName('h1')[0].innerHTML = ("Игра на знание статей УПК!")
+		message("Выбирай ответ и подтверждай повторным нажатием")
+
+		wrapper.innerHTML = wrap
+		
+		document.getElementById('UPK__wrapper').addEventListener("click", e => {
+			let variant = ""
+			
+			if([].indexOf.call(e.target.classList, "v") != -1){
+				e.stopPropagation()
+				variant = e.target.className
+					.replace(/variant(\S+)\s/, "$1")
+					.replace("v", "")
+			}
+			
+			if([].indexOf.call(e.target.classList, "yellow") == -1){
+				for (var i = 4; i > 0; i--) {
+					color("yellow", i, true)
+				}
+				e.target.classList.add("yellow")
+				return
+			}
+
+			if([].indexOf.call(e.target.classList, "yellow") != -1){
+				message("Выбор сделан!")
+				showRight()
+			}
+
+		})
+		refresh.addEventListener("click", ask)
+	
+		ask()
+	}
+
+	const color = (color, variant, del = false) => {
+		let elem = document.getElementsByClassName('variant' + variant)[0]
+		if(del) {
+			let res = [].indexOf.call(elem.classList, color) + 1
+			elem.classList.remove(color)
+			return !!res
+		} else {
+			elem.classList.add(color)
+		}
+	}
+
+	const fillVariant = (text, variant) => {
+		let block = document.getElementsByClassName("variant" + variant)[0]
+
+		if(!block) throw new Exception("wrong variant")
+
+		block.innerHTML = text
+	}
+
+	
+	return {
+		ask,
+		createUPK,
+		color
+	}
 })()
 
-console.log(Work)
+next.addEventListener("click", Work.createUPK)
 
 const Game = (function GameCreator(){
 	var times = 0
@@ -6704,7 +6836,7 @@ const Game = (function GameCreator(){
 	function checkAnswer() {	
 		const normalize = word => word
 			.toLowerCase()
-			.replace(/\.|\,/gi, "")
+			.replace(/[^А-Яа-яёЁA-Za-z]/gi, "")
 			.trim()
 		
 		times += 1
@@ -6718,10 +6850,6 @@ const Game = (function GameCreator(){
 		}
 	}
 
-	var message = (msg) => {
-		document.getElementById("msg").innerHTML = msg
-	}
-
 	var getRandomPoem = () => arrayOfPoems[Math.random() * poetryLength | 0]
 
 	var replaceOneWord = (poem) => {
@@ -6730,7 +6858,7 @@ const Game = (function GameCreator(){
 		let randomWord = array[Math.random() * len | 0]
 		answer = randomWord
 		let inputLength = randomWord.length * 13
-		let input = `<input class='inline' type='text' style='width:${inputLength}px'>`
+		let input = `<input class='inline' type='text' onblur='Game' style='width:${inputLength}px'>`
 		return poem.replace(randomWord, input)
 	}
 
@@ -6764,9 +6892,14 @@ const Game = (function GameCreator(){
 			<br>Среднее время: ${commonTime / times | 0}`)
 	}
 
+	const destruct = () => {
+		document.getElementById('refresh').removeEventListener('click', refreshPoem)
+		document.getElementById("look_answer").removeEventListener("click", checkAnswer)
+		document.getElementById("look_all").removeEventListener("click", look_all)
+	}
+
 	document.getElementById('refresh').addEventListener('click', refreshPoem)
 	document.getElementById("look_answer").addEventListener("click", checkAnswer)
 	document.getElementById("look_all").addEventListener("click", look_all)
-	
-	return {}
+	return {destruct}
 })()
