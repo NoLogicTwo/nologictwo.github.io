@@ -6703,6 +6703,8 @@ const Work = (function WorkFabric(){
 	var wins = 0
 	var games = 0
 	var variants = []
+	var reverse = 0
+	var antiReverse = 1
 
 	const save = () => {
 		let upk = {
@@ -6742,8 +6744,12 @@ const Work = (function WorkFabric(){
 		array[Math.random() * array.length | 0]
 
 	const ask = () => {
+		reverse = (Math.random() * 2) | 0
+		// I can do this every time, but save a tired browser
+		antiReverse = +!reverse
+
 		let qwest = getRandomArticle()
-		document.getElementsByClassName('qwest')[0].innerHTML = qwest[0]
+		document.getElementsByClassName('qwest')[0].innerHTML = qwest[reverse]
 		right = (Math.random() * 4 | 0) + 1
 		
 		const cleanField = (i) => {
@@ -6759,7 +6765,7 @@ const Work = (function WorkFabric(){
 			let current = (i == right) ? qwest : getRandomArticle()
 			
 			variants[i] = current
-			fillVariant(current[1], i)
+			fillVariant(current[antiReverse], i)
 		}
 	}
 
@@ -6777,7 +6783,7 @@ const Work = (function WorkFabric(){
 				color("red", i)
 			}
 
-			fillVariant(` - (${variants[i][0]})`, i, true)
+			fillVariant(` - (${variants[i][reverse]})`, i, true)
 		}
 
 		games += 1
@@ -6806,6 +6812,10 @@ const Work = (function WorkFabric(){
 		
 		document.getElementById('UPK__wrapper').addEventListener("click", e => {
 			let variant = ""
+			
+			if([].indexOf.call(e.target.classList, "v") == -1){
+				return
+			}
 			
 			if([].indexOf.call(e.target.classList, "v") != -1){
 				e.stopPropagation()
