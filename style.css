@@ -30,6 +30,11 @@ button {
 	}
 }
 
+#difficult{
+	width: 1.4em;
+	font-size: 1.3em;
+}
+
 .qwest{
 	grid-area: qw;
 }

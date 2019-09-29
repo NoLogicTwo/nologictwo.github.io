@@ -6677,6 +6677,7 @@ let wrapper = document.getElementById('poem__wrapper')
 let next = document.getElementById('next_game')
 let refresh = document.getElementById('refresh')
 let look = document.getElementById('look_answer')
+let difficultButton = document.getElementById('difficult')
 
 
 var message = (msg) => 
@@ -6699,7 +6700,9 @@ const Work = (function WorkFabric(){
 			let describe = c.replace(article, "").trim()
 			return [article, describe]
 		})
+	var difficult = 0
 	var right = 0
+	var indexRight = 0
 	var wins = 0
 	var games = 0
 	var variants = []
@@ -6740,15 +6743,40 @@ const Work = (function WorkFabric(){
 		}		
 	}
 
-	const getRandomArticle = () => 
-		array[Math.random() * array.length | 0]
+	const getRandomArticle = (isRight = false) => {
+		let idx = Math.random() * array.length | 0 
+		if(isRight) indexRight = idx
+		
+		return array[idx]
+	}
+
+	const getArticle = (num) => 
+		array[num]
+
+	const easyQwestion = (qwest, antiReverse) => {
+		for (let i = 1; i < 5; i++){
+			let current = (i == right) ? qwest : getRandomArticle()
+			
+			variants[i] = current
+			fillVariant(current[antiReverse], i)
+		}
+	}
+
+	const mediumQwestion = (qwest, antiReverse) => {
+		for (let i = 1; i < 5; i++){
+			let current = (i == right) ? qwest : getArticle(indexRight + i - right)
+			
+			variants[i] = current
+			fillVariant(current[antiReverse], i)
+		}	
+	}
 
 	const ask = () => {
 		reverse = (Math.random() * 2) | 0
 		// I can do this every time, but save a tired browser
 		antiReverse = +!reverse
 
-		let qwest = getRandomArticle()
+		let qwest = getRandomArticle(true)
 		document.getElementsByClassName('qwest')[0].innerHTML = qwest[reverse]
 		right = (Math.random() * 4 | 0) + 1
 		
@@ -6759,14 +6787,14 @@ const Work = (function WorkFabric(){
 		}
 
 		traverseVariants(cleanField)
-
-
-		for (let i = 1; i < 5; i++){
-			let current = (i == right) ? qwest : getRandomArticle()
-			
-			variants[i] = current
-			fillVariant(current[antiReverse], i)
+		
+		if(difficult == 0){
+			easyQwestion(qwest, antiReverse)
 		}
+		if(difficult == 1){
+			mediumQwestion(qwest, antiReverse)
+		}
+
 	}
 
 	const showRight = () => {
@@ -6852,6 +6880,9 @@ const Work = (function WorkFabric(){
 		})
 		refresh.addEventListener("click", ask)
 		look.addEventListener("click", showRight)
+		difficultButton.addEventListener("blur", e => {
+			difficult = +e.target.value
+		})
 	
 		ask()
 	}
