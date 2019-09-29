@@ -11,10 +11,23 @@ button {
 
 #UPK__wrapper {
 	display: grid;
+	width: 100%;
 	grid-template-areas: 
 		'qw qw'
 		"v1 v2"
 		"v3 v4";
+	grid-gap: 10px;
+}
+
+@media (max-width: 500px) {
+	#UPK__wrapper {
+		grid-template-areas: 
+			'qw'
+			"v1"
+			"v2"
+			"v3"
+			"v4";
+	}
 }
 
 .qwest{
@@ -42,9 +55,7 @@ button {
 	background-color: red;
 }
 .v{
-	padding: 20px;
-	margin: 5px;
-	font-size: 1.2em;
+	padding: 5px;
 	border: 1px solid black;
 	cursor: pointer;
 }

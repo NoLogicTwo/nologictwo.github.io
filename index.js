@@ -6676,10 +6676,20 @@ let headerUPK = `Статья 1. Законы, определяющие поря
 let wrapper = document.getElementById('poem__wrapper')
 let next = document.getElementById('next_game')
 let refresh = document.getElementById('refresh')
+let look = document.getElementById('look_answer')
+
 
 var message = (msg) => 
 	document.getElementById("msg").innerHTML = msg
 	
+const storage = (data = null) => {
+	if (data) {
+		localStorage.setItem("upk", JSON.stringify(data))
+	} else {
+		return localStorage.hasOwnProperty("upk") ? localStorage.getItem("upk") : null
+	}
+}
+
 const Work = (function WorkFabric(){
 	var array = headerUPK
 		.split('\n')
@@ -6692,6 +6702,35 @@ const Work = (function WorkFabric(){
 	var right = 0
 	var wins = 0
 	var games = 0
+	var variants = []
+
+	const save = () => {
+		let upk = {
+			wins,
+			games
+		}
+
+		storage(upk)
+	}
+
+	const load = () => {
+		let upk = storage()
+
+		if(upk){
+			let data = JSON.parse(upk)
+			wins = data['wins']
+			games = data['games']
+		}
+	}
+
+	const reset = () => {
+		let upk = {
+			wins: 0,
+			games: 0
+		}
+
+		storage(upk)
+	}
 
 	const traverseVariants = (callback) => {
 		for (let i = 1; i < 5; i++){
@@ -6705,7 +6744,7 @@ const Work = (function WorkFabric(){
 	const ask = () => {
 		let qwest = getRandomArticle()
 		document.getElementsByClassName('qwest')[0].innerHTML = qwest[0]
-		right = Math.random() * 4 | 0 + 1
+		right = (Math.random() * 4 | 0) + 1
 		
 		const cleanField = (i) => {
 			color("red", i, true)
@@ -6717,11 +6756,10 @@ const Work = (function WorkFabric(){
 
 
 		for (let i = 1; i < 5; i++){
-			if(i == right){
-				fillVariant(qwest[1], i)
-			} else {
-				fillVariant(getRandomArticle()[1], i)
-			}
+			let current = (i == right) ? qwest : getRandomArticle()
+			
+			variants[i] = current
+			fillVariant(current[1], i)
 		}
 	}
 
@@ -6738,16 +6776,20 @@ const Work = (function WorkFabric(){
 			if(color("yellow", i, true)){
 				color("red", i)
 			}
+
+			fillVariant(` - (${variants[i][0]})`, i, true)
 		}
 
 		games += 1
 
 		traverseVariants(callback)
 		message(`счет: ${wins} : ${games - wins}<br />процент успеха ${wins / games * 100 | 0}`)
+		save()
 	}
 
 	const createUPK = () => {
 		Game.destruct()
+		load()
 
 		let wrap = "<div id='UPK__wrapper'>"
 		wrap += '<div class="qwest"></div>'
@@ -6772,6 +6814,18 @@ const Work = (function WorkFabric(){
 					.replace("v", "")
 			}
 			
+			let hasGreen = (i) => {
+				if (color("green", i, true)){
+					color("green", i)
+					return true
+				}
+				return false
+			}
+
+			for (let i = 1; i < 5; i++) {
+				if(hasGreen(i)) return
+			}
+			
 			if([].indexOf.call(e.target.classList, "yellow") == -1){
 				for (var i = 4; i > 0; i--) {
 					color("yellow", i, true)
@@ -6787,6 +6841,7 @@ const Work = (function WorkFabric(){
 
 		})
 		refresh.addEventListener("click", ask)
+		look.addEventListener("click", showRight)
 	
 		ask()
 	}
@@ -6802,19 +6857,23 @@ const Work = (function WorkFabric(){
 		}
 	}
 
-	const fillVariant = (text, variant) => {
+	const fillVariant = (text, variant, addingMode = false) => {
 		let block = document.getElementsByClassName("variant" + variant)[0]
 
 		if(!block) throw new Exception("wrong variant")
+		
+		let content = addingMode
+			? block.innerHTML + text
+			: text
 
-		block.innerHTML = text
+		block.innerHTML = content
 	}
 
 	
 	return {
 		ask,
 		createUPK,
-		color
+		reset
 	}
 })()
 
