@@ -11,7 +11,8 @@ need to bind to a codex interface
 
   returned interface Question: {
     vars: Array of Variant,
-    
+    rightVariant: Number,
+    rightIdx: Number
   }
 
   interface Variant: {
@@ -45,17 +46,21 @@ export function getQuestion(Codex) {
         articleNum,
         articleText,
         isRight,
-        color: 'default',
+        color: 'transparent',
         setColor: (color) => {this.color = color} 
     })
 
     let rightVariant = (Math.random() * 4) | 0
     result.vars[rightVariant] = getVariant(getArticle(), true)
+    result.rightVariant =  result.vars[rightVariant]
+    result.rightIdx = rightVariant
 
     for(let i = 0; i < 4; i++){
       if(i == rightVariant) continue
       result.vars[i] = getVariant(getArticle())
     }
+
+    // result.rightVariant = rightVariant
 
     return result
   }
